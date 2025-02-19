@@ -152,7 +152,7 @@ async function dersSaatiSec(button) {
         const ogrenciListesi = document.getElementById('ogrenciListesi');
         ogrenciListesi.innerHTML = '<ul>' + data.map(ogrenci => `
             <li>
-                ${ogrenci.ogrenci_no} - ${ogrenci.ogrenci_ad_soyad}
+                <span style="flex: 1;">${ogrenci.ogrenci_no} - ${ogrenci.ogrenci_ad_soyad}</span>
                 <button class="durum-button geldi" onclick="toggleDurum(this)">GELDİ</button>
             </li>
         `).join('') + '</ul>';
@@ -178,47 +178,78 @@ function toggleDurum(button) {
 }
 
 async function yoklamaKaydet() {
-    const sinif = document.getElementById('seciliSinif').textContent;
-    const dersSaati = document.getElementById('seciliDersSaati').textContent;
-    const ogretmen = document.getElementById('seciliOgretmen').textContent;
-    const gelmeyenOgrenciler = Array.from(document.querySelectorAll('.gelmedi'))
-        .map(button => button.parentElement.textContent.split(' - ')[0])
-        .join('-');
-
     try {
+        const sinif = document.getElementById('seciliSinif').textContent;
+        const dersSaati = document.getElementById('seciliDersSaati').textContent;
+        const ogretmen = document.getElementById('seciliOgretmen').textContent;
+        const tarih = document.getElementById('seciliTarih').textContent;
+        
+        const gelmeyenOgrenciler = Array.from(document.querySelectorAll('.gelmedi'))
+            .map(button => button.parentElement.textContent.split(' - ')[0].trim())
+            .join('-');
+
+        console.log('Kaydedilecek veriler:', {
+            sinif,
+            dersSaati,
+            ogretmen,
+            tarih,
+            gelmeyenOgrenciler
+        });
+
         const { data, error } = await supabaseClient
             .from('yoklama')
             .select('*')
             .eq('sinif', sinif)
             .eq('ders_saati', dersSaati)
-            .eq('ogretmen', ogretmen);
+            .eq('ogretmen', ogretmen)
+            .eq('tarih', tarih);
 
-        if (error) throw error;
+        if (error) {
+            console.error('Yoklama sorgulama hatası:', error);
+            throw error;
+        }
 
-        if (data.length > 0) {
+        if (data && data.length > 0) {
             if (!confirm("Bu gün ve ders saati için zaten bir yoklama var. Güncellemek ister misiniz?")) {
                 return;
             }
+
             const { error: updateError } = await supabaseClient
                 .from('yoklama')
-                .update({ gelmeyen_ogrenciler: gelmeyenOgrenciler })
+                .update({ 
+                    gelmeyen_ogrenciler: gelmeyenOgrenciler,
+                    guncelleme_tarihi: new Date().toISOString()
+                })
                 .eq('id', data[0].id);
 
-            if (updateError) throw updateError;
+            if (updateError) {
+                console.error('Güncelleme hatası:', updateError);
+                throw updateError;
+            }
 
             alert("Yoklama başarıyla güncellendi.");
         } else {
             const { error: insertError } = await supabaseClient
                 .from('yoklama')
-                .insert([{ sinif, ders_saati: dersSaati, ogretmen, gelmeyen_ogrenciler: gelmeyenOgrenciler }]);
+                .insert([{ 
+                    sinif, 
+                    ders_saati: dersSaati, 
+                    ogretmen, 
+                    tarih,
+                    gelmeyen_ogrenciler: gelmeyenOgrenciler,
+                    kayit_tarihi: new Date().toISOString()
+                }]);
 
-            if (insertError) throw insertError;
+            if (insertError) {
+                console.error('Ekleme hatası:', insertError);
+                throw insertError;
+            }
 
             alert("Yoklama başarıyla kaydedildi.");
         }
     } catch (error) {
-        console.error('Hata:', error);
-        alert("Yoklama kaydedilirken bir hata oluştu.");
+        console.error('Genel hata:', error);
+        alert("Yoklama kaydedilirken bir hata oluştu: " + error.message);
     }
 }
 
