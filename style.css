@@ -243,16 +243,19 @@ button:hover::after {
     width: 80px;
     text-align: center;
     margin-left: 10px;
+    border: none;
 }
 
 .geldi {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #4CAF50 !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
 }
 
 .gelmedi {
-    background-color: #f44336;
-    color: white;
+    background-color: #f44336 !important;
+    color: white !important;
+    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
 }
 
 .secim-bilgisi {
