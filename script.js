@@ -149,7 +149,8 @@ async function dersSaatiSec(button) {
         const { data: ogrenciler, error: ogrenciError } = await supabaseClient
             .from('ogrencilistesi')
             .select('*')
-            .eq('sinif_adi', secilenSinif);
+            .eq('sinif_adi', secilenSinif)
+            .order('ogrenci_no', { ascending: true });
 
         if (ogrenciError) throw ogrenciError;
 
@@ -159,16 +160,21 @@ async function dersSaatiSec(button) {
             .select('*')
             .eq('sinif', secilenSinif)
             .eq('ders_saati', dersSaati)
-            .eq('ogretmen', ogretmen)
             .eq('tarih', tarih)
-            .single();
+            .order('kayit_tarihi', { ascending: false })
+            .limit(1);
 
-        if (yoklamaError && yoklamaError.code !== 'PGRST116') throw yoklamaError;
+        if (yoklamaError) throw yoklamaError;
 
         let gelmeyenOgrenciler = [];
-        if (yoklamaData && yoklamaData.gelmeyen_ogrenciler) {
-            gelmeyenOgrenciler = yoklamaData.gelmeyen_ogrenciler.split('-').map(no => no.trim());
+        if (yoklamaData && yoklamaData.length > 0 && yoklamaData[0].gelmeyen_ogrenciler) {
+            gelmeyenOgrenciler = yoklamaData[0].gelmeyen_ogrenciler
+                .split('-')
+                .map(no => no.trim())
+                .filter(no => no !== '');
         }
+
+        console.log('Gelmeyen öğrenciler:', gelmeyenOgrenciler);
 
         const ogrenciListesi = document.getElementById('ogrenciListesi');
         ogrenciListesi.innerHTML = '<ul>' + ogrenciler.map(ogrenci => {
@@ -213,6 +219,7 @@ async function yoklamaKaydet() {
         
         const gelmeyenOgrenciler = Array.from(document.querySelectorAll('.gelmedi'))
             .map(button => button.parentElement.textContent.split(' - ')[0].trim())
+            .filter(no => no !== '')
             .join('-');
 
         console.log('Kaydedilecek veriler:', {
@@ -228,8 +235,9 @@ async function yoklamaKaydet() {
             .select('*')
             .eq('sinif', sinif)
             .eq('ders_saati', dersSaati)
-            .eq('ogretmen', ogretmen)
-            .eq('tarih', tarih);
+            .eq('tarih', tarih)
+            .order('kayit_tarihi', { ascending: false })
+            .limit(1);
 
         if (error) {
             console.error('Yoklama sorgulama hatası:', error);
@@ -245,7 +253,8 @@ async function yoklamaKaydet() {
                 .from('yoklama')
                 .update({ 
                     gelmeyen_ogrenciler: gelmeyenOgrenciler,
-                    guncelleme_tarihi: new Date().toISOString()
+                    guncelleme_tarihi: new Date().toISOString(),
+                    ogretmen: ogretmen
                 })
                 .eq('id', data[0].id);
 
