@@ -36,6 +36,9 @@ function ogretmenSecildi() {
     const select = document.getElementById('ogretmenSelect');
     const errorMessage = document.getElementById('errorMessage');
     
+    // Klavyeyi kapat
+    select.blur();
+    
     if (select.value !== "") {
         tcNoAlani.style.display = 'block';
         errorMessage.style.display = 'none';
@@ -48,6 +51,9 @@ async function girisKontrol() {
     const select = document.getElementById('ogretmenSelect');
     const tcNo = document.getElementById('tcNo');
     const errorMessage = document.getElementById('errorMessage');
+
+    // Klavyeyi kapat
+    tcNo.blur();
 
     if (select.value === "") {
         errorMessage.style.display = 'block';
@@ -110,6 +116,10 @@ async function getSiniflar() {
 
 function sinifSec() {
     const sinifSelect = document.getElementById('sinifSelect');
+    
+    // Klavyeyi kapat
+    sinifSelect.blur();
+
     if (sinifSelect.value === "") {
         return;
     }
@@ -126,13 +136,23 @@ function setDefaultDate() {
 }
 
 function tarihSec() {
-    const tarih = document.getElementById('tarihSec').value;
+    const tarihInput = document.getElementById('tarihSec');
+    const tarih = tarihInput.value;
+    
+    // Klavyeyi kapat
+    tarihInput.blur();
+
     document.getElementById('seciliTarih').textContent = tarih;
     document.getElementById('tarihContainer').style.display = 'none';
     document.getElementById('dersSaatiContainer').style.display = 'block';
 }
 
 async function dersSaatiSec(button) {
+    // Klavyeyi kapat (eğer açıksa)
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+
     const buttons = document.querySelectorAll('.ders-saatleri button');
     buttons.forEach(btn => btn.classList.remove('selected'));
     button.classList.add('selected');
@@ -199,6 +219,11 @@ async function dersSaatiSec(button) {
 }
 
 function toggleDurum(button) {
+    // Klavyeyi kapat (eğer açıksa)
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+
     if (button.classList.contains('geldi')) {
         button.classList.remove('geldi');
         button.classList.add('gelmedi');
@@ -211,6 +236,11 @@ function toggleDurum(button) {
 }
 
 async function yoklamaKaydet() {
+    // Klavyeyi kapat (eğer açıksa)
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+
     try {
         const sinif = document.getElementById('seciliSinif').textContent;
         const dersSaati = document.getElementById('seciliDersSaati').textContent;
@@ -290,23 +320,46 @@ async function yoklamaKaydet() {
 }
 
 function geriDonGiris() {
+    // Klavyeyi kapat (eğer açıksa)
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
     document.getElementById('sinifContainer').style.display = 'none';
     document.getElementById('girisContainer').style.display = 'block';
 }
 
 function geriDonSinif() {
+    // Klavyeyi kapat (eğer açıksa)
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
     document.getElementById('tarihContainer').style.display = 'none';
     document.getElementById('sinifContainer').style.display = 'block';
 }
 
 function geriDonTarih() {
+    // Klavyeyi kapat (eğer açıksa)
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
     document.getElementById('dersSaatiContainer').style.display = 'none';
     document.getElementById('tarihContainer').style.display = 'block';
 }
 
 function geriDonDersSaati() {
+    // Klavyeyi kapat (eğer açıksa)
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
     document.getElementById('ogrenciListesiContainer').style.display = 'none';
     document.getElementById('dersSaatiContainer').style.display = 'block';
 }
 
 document.addEventListener('DOMContentLoaded', getOgretmenler);
+
+// Tüm input ve select elementleri için otomatik klavye kapatma
+document.addEventListener('change', function(e) {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+        e.target.blur();
+    }
+});
