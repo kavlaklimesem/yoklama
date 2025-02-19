@@ -141,27 +141,54 @@ async function dersSaatiSec(button) {
     document.getElementById('seciliDersSaati').textContent = dersSaati;
 
     const secilenSinif = document.getElementById('sinifSelect').value;
+    const ogretmen = document.getElementById('seciliOgretmen').textContent;
+    const tarih = document.getElementById('seciliTarih').textContent;
+
     try {
-        const { data, error } = await supabaseClient
+        // Önce öğrenci listesini al
+        const { data: ogrenciler, error: ogrenciError } = await supabaseClient
             .from('ogrencilistesi')
             .select('*')
             .eq('sinif_adi', secilenSinif);
 
-        if (error) throw error;
+        if (ogrenciError) throw ogrenciError;
+
+        // Mevcut yoklama kaydını kontrol et
+        const { data: yoklamaData, error: yoklamaError } = await supabaseClient
+            .from('yoklama')
+            .select('*')
+            .eq('sinif', secilenSinif)
+            .eq('ders_saati', dersSaati)
+            .eq('ogretmen', ogretmen)
+            .eq('tarih', tarih)
+            .single();
+
+        if (yoklamaError && yoklamaError.code !== 'PGRST116') throw yoklamaError;
+
+        let gelmeyenOgrenciler = [];
+        if (yoklamaData && yoklamaData.gelmeyen_ogrenciler) {
+            gelmeyenOgrenciler = yoklamaData.gelmeyen_ogrenciler.split('-').map(no => no.trim());
+        }
 
         const ogrenciListesi = document.getElementById('ogrenciListesi');
-        ogrenciListesi.innerHTML = '<ul>' + data.map(ogrenci => `
-            <li>
-                <span style="flex: 1;">${ogrenci.ogrenci_no} - ${ogrenci.ogrenci_ad_soyad}</span>
-                <button class="durum-button geldi" onclick="toggleDurum(this)">GELDİ</button>
-            </li>
-        `).join('') + '</ul>';
+        ogrenciListesi.innerHTML = '<ul>' + ogrenciler.map(ogrenci => {
+            const isGelmedi = gelmeyenOgrenciler.includes(ogrenci.ogrenci_no);
+            return `
+                <li>
+                    <span style="flex: 1;">${ogrenci.ogrenci_no} - ${ogrenci.ogrenci_ad_soyad}</span>
+                    <button class="durum-button ${isGelmedi ? 'gelmedi' : 'geldi'}" onclick="toggleDurum(this)">
+                        ${isGelmedi ? 'GELMEDİ' : 'GELDİ'}
+                    </button>
+                </li>
+            `;
+        }).join('') + '</ul>';
 
         document.getElementById('dersSaatiContainer').style.display = 'none';
         document.getElementById('ogrenciListesiContainer').style.display = 'block';
 
     } catch (error) {
         console.error('Hata:', error);
+        alert('Öğrenci listesi yüklenirken bir hata oluştu.');
     }
 }
 
