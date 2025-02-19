@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ders Saati Seçimi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header">
+        <h1>KAVLAKLI MESEM YOKLAMA</h1>
+    </div>
+    
+    <div class="secim-bilgisi" id="secimBilgisi">
+        Öğretmen: <span id="seciliOgretmen"></span> | Sınıf: <span id="seciliSinif"></span> | Tarih: <span id="seciliTarih"></span> | Ders Saati: <span id="seciliDersSaati"></span>
+    </div>
+
+    <div class="container" id="girisContainer">
+        <h1>Öğretmen Girişi</h1>
+        <div class="form-group">
+            <label for="ogretmenSelect">
+                <i class="fas fa-user"></i> Öğretmen Seçimi
+            </label>
+            <select id="ogretmenSelect" onchange="ogretmenSecildi()">
+                <option value="">Seçiniz</option>
+            </select>
+        </div>
+        <div class="form-group" id="tcNoAlani">
+            <label for="tcNo">
+                <i class="fas fa-id-card"></i> TC Kimlik No
+            </label>
+            <input type="text" id="tcNo" maxlength="11" placeholder="TC Kimlik No">
+        </div>
+        <button onclick="girisKontrol()">
+            <i class="fas fa-sign-in-alt"></i>
+            Giriş Yap
+        </button>
+        <div class="error-message" id="errorMessage">
+            Lütfen geçerli bir öğretmen ve TC kimlik numarası giriniz.
+        </div>
+    </div>
+
+    <div class="container" id="sinifContainer" style="display: none;">
+        <h1>Sınıf Seçimi</h1>
+        <div class="form-group">
+            <label for="sinifSelect">
+                <i class="fas fa-chalkboard"></i> Sınıf Seçimi
+            </label>
+            <select id="sinifSelect">
+                <option value="">Seçiniz</option>
+            </select>
+        </div>
+        <button onclick="sinifSec()">
+            <i class="fas fa-arrow-right"></i>
+            Devam Et
+        </button>
+        <button onclick="geriDonGiris()" style="margin-top: 15px;">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
+        </button>
+    </div>
+
+    <div class="container" id="tarihContainer" style="display: none;">
+        <h1>Tarih Seçimi</h1>
+        <div class="form-group">
+            <label for="tarihSec">
+                <i class="fas fa-calendar-alt"></i> Tarih Seçimi
+            </label>
+            <input type="date" id="tarihSec">
+        </div>
+
+        <button onclick="tarihSec()">
+            <i class="fas fa-arrow-right"></i>
+            Devam Et
+        </button>
+        <button onclick="geriDonSinif()" style="margin-top: 15px;">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
+        </button>
+    </div>
+
+    <div class="container" id="dersSaatiContainer" style="display: none;">
+        <h1>Ders Saati Seçimi</h1>
+        <div class="ders-saatleri">
+            <div class="ders-saatleri-row">
+                <button onclick="dersSaatiSec(this)">1</button>
+                <button onclick="dersSaatiSec(this)">2</button>
+                <button onclick="dersSaatiSec(this)">3</button>
+                <button onclick="dersSaatiSec(this)">4</button>
+                <button onclick="dersSaatiSec(this)">5</button>
+                <button onclick="dersSaatiSec(this)">6</button>
+            </div>
+            <div class="ders-saatleri-row">
+                <button onclick="dersSaatiSec(this)">7</button>
+                <button onclick="dersSaatiSec(this)">8</button>
+                <button onclick="dersSaatiSec(this)">9</button>
+                <button onclick="dersSaatiSec(this)">10</button>
+                <button onclick="dersSaatiSec(this)">11</button>
+                <button onclick="dersSaatiSec(this)">12</button>
+            </div>
+        </div>
+        <button onclick="geriDonTarih()" style="margin-top: 15px;">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
+        </button>
+    </div>
+
+    <div class="container" id="ogrenciListesiContainer" style="display: none;">
+        <h1>Öğrenci Listesi</h1>
+        <div class="ogrenci-listesi" id="ogrenciListesi">
+            <!-- Öğrenci listesi burada gösterilecek -->
+        </div>
+        <button onclick="geriDonDersSaati()" style="margin-top: 15px;">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
+        </button>
+        <button onclick="yoklamaKaydet()" style="margin-top: 15px;">
+            <i class="fas fa-save"></i>
+            Yoklama Kaydet
+        </button>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
