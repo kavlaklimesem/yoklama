@@ -252,12 +252,19 @@ async function yoklamaKaydet() {
             .filter(no => no !== '')
             .join('-');
 
+        // Türkiye saati için tarih oluştur
+        const now = new Date();
+        const turkishOffset = 3; // UTC+3 için
+        const turkishTime = new Date(now.getTime() + (turkishOffset * 60 * 60 * 1000));
+        const kayitTarihi = turkishTime.toISOString();
+
         console.log('Kaydedilecek veriler:', {
             sinif,
             dersSaati,
             ogretmen,
             tarih,
-            gelmeyenOgrenciler
+            gelmeyenOgrenciler,
+            kayitTarihi
         });
 
         const { data, error } = await supabaseClient
@@ -283,7 +290,7 @@ async function yoklamaKaydet() {
                 .from('yoklama')
                 .update({ 
                     gelmeyen_ogrenciler: gelmeyenOgrenciler,
-                    guncelleme_tarihi: new Date().toISOString(),
+                    guncelleme_tarihi: kayitTarihi,
                     ogretmen: ogretmen
                 })
                 .eq('id', data[0].id);
@@ -303,7 +310,7 @@ async function yoklamaKaydet() {
                     ogretmen, 
                     tarih,
                     gelmeyen_ogrenciler: gelmeyenOgrenciler,
-                    kayit_tarihi: new Date().toISOString()
+                    kayit_tarihi: kayitTarihi
                 }]);
 
             if (insertError) {
