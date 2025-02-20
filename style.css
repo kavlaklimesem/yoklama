@@ -246,16 +246,14 @@ button:hover::after {
     border: none;
 }
 
-.geldi {
-    background-color: #4CAF50 !important;
-    color: white !important;
-    box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+.durum-button.geldi {
+    background-color: #4CAF50;
+    color: white;
 }
 
-.gelmedi {
-    background-color: #f44336 !important;
-    color: white !important;
-    box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+.durum-button.gelmedi {
+    background-color: #f44336;
+    color: white;
 }
 
 .secim-bilgisi {
@@ -275,4 +273,29 @@ button:hover::after {
     .container {
         padding: 15px;
     }
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
 }

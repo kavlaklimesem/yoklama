@@ -43,6 +43,50 @@
         </div>
     </div>
 
+    <!-- Mehmet Kazan için özel butonlar -->
+    <div class="container" id="ozelButonlarContainer" style="display: none;">
+        <button onclick="sinifSecimi()">
+            <i class="fas fa-chalkboard-teacher"></i>
+            SINIF SEÇİMİ
+        </button>
+        <button onclick="yoklamaRaporu()">
+            <i class="fas fa-file-alt"></i>
+            YOKLAMA RAPORU
+        </button>
+        <button onclick="geriDonGiris()" style="margin-top: 15px;">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
+        </button>
+    </div>
+
+    <!-- Rapor Tarih Seçimi -->
+    <div class="container" id="raporTarihContainer" style="display: none;">
+        <h1>Rapor Tarih ve Sınıf Seçimi</h1>
+        <div class="form-group">
+            <label for="raporTarihSec">
+                <i class="fas fa-calendar-alt"></i> Tarih Seçimi
+            </label>
+            <input type="date" id="raporTarihSec">
+        </div>
+        <div class="form-group">
+            <label for="raporSinifSelect">
+                <i class="fas fa-chalkboard"></i> Sınıf Seçimi
+            </label>
+            <select id="raporSinifSelect">
+                <option value="">Seçiniz</option>
+                <!-- Sınıf seçenekleri buraya yüklenecek -->
+            </select>
+        </div>
+        <button onclick="raporTarihSec()">
+            <i class="fas fa-arrow-right"></i>
+            Devam Et
+        </button>
+        <button onclick="geriDonOzelButonlar()" style="margin-top: 15px;">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
+        </button>
+    </div>
+
     <div class="container" id="sinifContainer" style="display: none;">
         <h1>Sınıf Seçimi</h1>
         <div class="form-group">
@@ -102,6 +146,10 @@
                 <button onclick="dersSaatiSec(this)">12</button>
             </div>
         </div>
+        <button onclick="yoklamaAl()" style="margin-top: 15px;">
+            <i class="fas fa-check"></i>
+            Yoklama Al
+        </button>
         <button onclick="geriDonTarih()" style="margin-top: 15px;">
             <i class="fas fa-arrow-left"></i>
             Geri Dön
@@ -120,6 +168,22 @@
         <button onclick="yoklamaKaydet()" style="margin-top: 15px;">
             <i class="fas fa-save"></i>
             Yoklama Kaydet
+        </button>
+    </div>
+
+    <!-- Rapor Sonuçları -->
+    <div class="container" id="raporSonucContainer" style="display: none;">
+        <h1>Devamsızlık Raporu</h1>
+        <div id="raporListesi">
+            <!-- Devamsızlık raporu burada gösterilecek -->
+        </div>
+        <button onclick="indirCSV()" style="margin-top: 15px;">
+            <i class="fas fa-file-csv"></i>
+            CSV Olarak İndir
+        </button>
+        <button onclick="geriDonRaporTarih()" style="margin-top: 15px;">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
         </button>
     </div>
 
