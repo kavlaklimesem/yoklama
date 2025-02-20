@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 </head>
 <body>
     <div class="header">
@@ -32,7 +36,7 @@
             <label for="tcNo">
                 <i class="fas fa-id-card"></i> TC Kimlik No
             </label>
-            <input type="text" id="tcNo" maxlength="11" placeholder="TC Kimlik No">
+            <input type="text" id="tcNo" maxlength="11" placeholder="TC Kimlik No" disabled>
         </div>
         <button onclick="girisKontrol()">
             <i class="fas fa-sign-in-alt"></i>
@@ -61,21 +65,12 @@
 
     <!-- Rapor Tarih Seçimi -->
     <div class="container" id="raporTarihContainer" style="display: none;">
-        <h1>Rapor Tarih ve Sınıf Seçimi</h1>
+        <h1>Rapor Tarih Seçimi</h1>
         <div class="form-group">
-            <label for="raporTarihSec">
-                <i class="fas fa-calendar-alt"></i> Tarih Seçimi
+            <label for="tarihAraligiSec">
+                <i class="fas fa-calendar-alt"></i> Tarih Aralığı
             </label>
-            <input type="date" id="raporTarihSec">
-        </div>
-        <div class="form-group">
-            <label for="raporSinifSelect">
-                <i class="fas fa-chalkboard"></i> Sınıf Seçimi
-            </label>
-            <select id="raporSinifSelect">
-                <option value="">Seçiniz</option>
-                <!-- Sınıf seçenekleri buraya yüklenecek -->
-            </select>
+            <input type="text" id="tarihAraligiSec" />
         </div>
         <button onclick="raporTarihSec()">
             <i class="fas fa-arrow-right"></i>
@@ -87,6 +82,27 @@
         </button>
     </div>
 
+    <!-- Tarih Seçimi -->
+    <div class="container" id="tarihContainer" style="display: none;">
+        <h1>Tarih Seçimi</h1>
+        <div class="form-group">
+            <label for="tarihSec">
+                <i class="fas fa-calendar-alt"></i> Tarih Seçimi
+            </label>
+            <input type="date" id="tarihSec">
+        </div>
+
+        <button onclick="tarihSec()">
+            <i class="fas fa-arrow-right"></i>
+            Devam Et
+        </button>
+        <button onclick="geriDonGiris()" style="margin-top: 15px;">
+            <i class="fas fa-arrow-left"></i>
+            Geri Dön
+        </button>
+    </div>
+
+    <!-- Sınıf Seçimi -->
     <div class="container" id="sinifContainer" style="display: none;">
         <h1>Sınıf Seçimi</h1>
         <div class="form-group">
@@ -98,25 +114,6 @@
             </select>
         </div>
         <button onclick="sinifSec()">
-            <i class="fas fa-arrow-right"></i>
-            Devam Et
-        </button>
-        <button onclick="geriDonGiris()" style="margin-top: 15px;">
-            <i class="fas fa-arrow-left"></i>
-            Geri Dön
-        </button>
-    </div>
-
-    <div class="container" id="tarihContainer" style="display: none;">
-        <h1>Tarih Seçimi</h1>
-        <div class="form-group">
-            <label for="tarihSec">
-                <i class="fas fa-calendar-alt"></i> Tarih Seçimi
-            </label>
-            <input type="date" id="tarihSec">
-        </div>
-
-        <button onclick="tarihSec()">
             <i class="fas fa-arrow-right"></i>
             Devam Et
         </button>

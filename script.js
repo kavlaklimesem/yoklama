@@ -33,6 +33,7 @@ async function getOgretmenler() {
 
 function ogretmenSecildi() {
     const tcNoAlani = document.getElementById('tcNoAlani');
+    const tcNoInput = document.getElementById('tcNo');
     const select = document.getElementById('ogretmenSelect');
     const errorMessage = document.getElementById('errorMessage');
     
@@ -41,9 +42,11 @@ function ogretmenSecildi() {
     
     if (select.value !== "") {
         tcNoAlani.style.display = 'block';
+        tcNoInput.disabled = false; // TC kimlik numarası girişini etkinleştir
         errorMessage.style.display = 'none';
     } else {
         tcNoAlani.style.display = 'none';
+        tcNoInput.disabled = true; // TC kimlik numarası girişini pasif hale getir
     }
 }
 
@@ -76,16 +79,26 @@ async function girisKontrol() {
         if (error) throw error;
 
         if (data) {
-            localStorage.setItem('ogretmenIsmi', `${data.ad.toUpperCase()} ${data.soyad.toUpperCase()} ÖĞRETMEN`);
-            document.getElementById('seciliOgretmen').textContent = localStorage.getItem('ogretmenIsmi');
+            const ogretmenIsmi = `${data.ad.toUpperCase()} ${data.soyad.toUpperCase()} ÖĞRETMEN`;
+            localStorage.setItem('ogretmenIsmi', ogretmenIsmi);
+            document.getElementById('seciliOgretmen').textContent = ogretmenIsmi;
             document.getElementById('girisContainer').style.display = 'none';
 
-            // Mehmet Kazan için özel butonları göster
-            if (tcNo.value === "19451103048") {
+            const ozelKullanicilar = [
+                "19451103048", // Mehmet Kazan
+                "31973140738", "21389038194", "60115197910", "26666641524" // Diğer özel kullanıcılar
+            ];
+            if (ozelKullanicilar.includes(tcNo.value)) {
                 document.getElementById('ozelButonlarContainer').style.display = 'block';
+                // Buton metnini değiştir
+                document.querySelector('#ozelButonlarContainer button').innerHTML = `
+                    <i class="fas fa-calendar-alt"></i>
+                    TARİH SEÇİMİ
+                `;
             } else {
-                document.getElementById('sinifContainer').style.display = 'block';
-                getSiniflar();
+                // Giriş başarılı olduğunda tarih seçimi ekranını göster
+                document.getElementById('tarihContainer').style.display = 'block';
+                setDefaultDate('tarihSec'); // Varsayılan tarihi ayarla
             }
         } else {
             errorMessage.style.display = 'block';
@@ -99,14 +112,23 @@ async function girisKontrol() {
 
 async function getSiniflar() {
     try {
+        const tarihInput = document.getElementById('tarihSec');
+        const tarih = new Date(tarihInput.value);
+        
+        // Gün ismini kontrol et
+        const gun = tarih.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
+        console.log(`Seçilen gün: ${gun}`); // Gün ismini kontrol etmek için log ekleyin
+
         const { data, error } = await supabaseClient
             .from('siniflar')
             .select('*')
+            .eq('gun', gun)
             .order('ad', { ascending: true });
 
         if (error) throw error;
 
         const select = document.getElementById('sinifSelect');
+        select.innerHTML = '<option value="">Seçiniz</option>'; // Önceki seçenekleri temizle
         
         data.forEach(sinif => {
             const option = document.createElement('option');
@@ -136,6 +158,21 @@ function tarihSec() {
 
     document.getElementById('seciliTarih').textContent = tarih;
     document.getElementById('tarihContainer').style.display = 'none';
+    document.getElementById('sinifContainer').style.display = 'block';
+    getSiniflar(); // Tarih seçildikten sonra sınıfları yükle
+}
+
+function sinifSec() {
+    const sinifSelect = document.getElementById('sinifSelect');
+    const secilenSinif = sinifSelect.value;
+    
+    if (secilenSinif === "") {
+        alert("Lütfen bir sınıf seçiniz.");
+        return;
+    }
+
+    document.getElementById('seciliSinif').textContent = secilenSinif;
+    document.getElementById('sinifContainer').style.display = 'none';
     document.getElementById('dersSaatiContainer').style.display = 'block';
 }
 
@@ -176,56 +213,56 @@ async function yoklamaKaydet() {
         const kayitTarihi = turkishTime.toISOString();
 
         for (let dersSaati of selectedDersSaatleri) {
-            const { data, error } = await supabaseClient
-                .from('yoklama')
-                .select('*')
-                .eq('sinif', sinif)
-                .eq('ders_saati', dersSaati)
-                .eq('tarih', tarih)
-                .order('kayit_tarihi', { ascending: false })
-                .limit(1);
+        const { data, error } = await supabaseClient
+            .from('yoklama')
+            .select('*')
+            .eq('sinif', sinif)
+            .eq('ders_saati', dersSaati)
+            .eq('tarih', tarih)
+            .order('kayit_tarihi', { ascending: false })
+            .limit(1);
 
-            if (error) {
-                console.error('Yoklama sorgulama hatası:', error);
-                throw error;
-            }
+        if (error) {
+            console.error('Yoklama sorgulama hatası:', error);
+            throw error;
+        }
 
-            if (data && data.length > 0) {
+        if (data && data.length > 0) {
                 if (!confirm(`${dersSaati}. saat için zaten bir yoklama var. Güncellemek ister misiniz?`)) {
                     continue;
-                }
+            }
 
-                const { error: updateError } = await supabaseClient
-                    .from('yoklama')
-                    .update({ 
-                        gelmeyen_ogrenciler: gelmeyenOgrenciler,
-                        guncelleme_tarihi: kayitTarihi,
-                        ogretmen: ogretmen
-                    })
-                    .eq('id', data[0].id);
+            const { error: updateError } = await supabaseClient
+                .from('yoklama')
+                .update({ 
+                    gelmeyen_ogrenciler: gelmeyenOgrenciler,
+                    guncelleme_tarihi: kayitTarihi,
+                    ogretmen: ogretmen
+                })
+                .eq('id', data[0].id);
 
-                if (updateError) {
-                    console.error('Güncelleme hatası:', updateError);
-                    throw updateError;
-                }
+            if (updateError) {
+                console.error('Güncelleme hatası:', updateError);
+                throw updateError;
+            }
 
                 alert(`${dersSaati}. saat için yoklama başarıyla güncellendi.`);
-            } else {
-                const { error: insertError } = await supabaseClient
-                    .from('yoklama')
-                    .insert([{ 
-                        sinif, 
-                        ders_saati: dersSaati, 
-                        ogretmen, 
-                        tarih,
-                        gelmeyen_ogrenciler: gelmeyenOgrenciler,
-                        kayit_tarihi: kayitTarihi
-                    }]);
+        } else {
+            const { error: insertError } = await supabaseClient
+                .from('yoklama')
+                .insert([{ 
+                    sinif, 
+                    ders_saati: dersSaati, 
+                    ogretmen, 
+                    tarih,
+                    gelmeyen_ogrenciler: gelmeyenOgrenciler,
+                    kayit_tarihi: kayitTarihi
+                }]);
 
-                if (insertError) {
-                    console.error('Ekleme hatası:', insertError);
-                    throw insertError;
-                }
+            if (insertError) {
+                console.error('Ekleme hatası:', insertError);
+                throw insertError;
+            }
 
                 alert(`${dersSaati}. saat için yoklama başarıyla kaydedildi.`);
             }
@@ -236,6 +273,9 @@ async function yoklamaKaydet() {
         document.getElementById('ogrenciListesiContainer').style.display = 'none';
         document.getElementById('girisContainer').style.display = 'block';
 
+        // Seçimleri sıfırla
+        secimleriSifirla();
+
     } catch (error) {
         console.error('Genel hata:', error);
         alert("Yoklama kaydedilirken bir hata oluştu: " + error.message);
@@ -243,46 +283,81 @@ async function yoklamaKaydet() {
 }
 
 function geriDonGiris() {
-    // Klavyeyi kapat (eğer açıksa)
     if (document.activeElement) {
         document.activeElement.blur();
     }
     
-    // Mehmet Kazan için özel butonları gizle
-    const tcNo = document.getElementById('tcNo').value;
-    if (tcNo === "19451103048") {
-        document.getElementById('ozelButonlarContainer').style.display = 'none';
+    tumEkranlariGizle();
+    document.getElementById('girisContainer').style.display = 'block';
+    secimleriSifirla();
+}
+
+function geriDonOzelGiris() {
+    if (document.activeElement) {
+        document.activeElement.blur();
     }
     
-    document.getElementById('sinifContainer').style.display = 'none';
-    document.getElementById('girisContainer').style.display = 'block';
+    tumEkranlariGizle();
+    document.getElementById('ozelButonlarContainer').style.display = 'block';
 }
 
 function geriDonSinif() {
-    // Klavyeyi kapat (eğer açıksa)
     if (document.activeElement) {
         document.activeElement.blur();
     }
-    document.getElementById('tarihContainer').style.display = 'none';
-    document.getElementById('sinifContainer').style.display = 'block';
-}
-
-function geriDonTarih() {
-    // Klavyeyi kapat (eğer açıksa)
-    if (document.activeElement) {
-        document.activeElement.blur();
-    }
-    document.getElementById('dersSaatiContainer').style.display = 'none';
+    
+    tumEkranlariGizle();
     document.getElementById('tarihContainer').style.display = 'block';
 }
 
-function geriDonDersSaati() {
-    // Klavyeyi kapat (eğer açıksa)
+function geriDonOzelSinif() {
     if (document.activeElement) {
         document.activeElement.blur();
     }
-    document.getElementById('ogrenciListesiContainer').style.display = 'none';
+    
+    tumEkranlariGizle();
+    document.getElementById('ozelButonlarContainer').style.display = 'block';
+}
+
+function geriDonTarih() {
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+    
+    tumEkranlariGizle();
+    document.getElementById('sinifContainer').style.display = 'block';
+}
+
+function geriDonOzelTarih() {
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+    
+    tumEkranlariGizle();
+    document.getElementById('ozelButonlarContainer').style.display = 'block';
+}
+
+function geriDonDersSaati() {
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+    
+    tumEkranlariGizle();
     document.getElementById('dersSaatiContainer').style.display = 'block';
+}
+
+function geriDonOzelDersSaati() {
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+    
+    tumEkranlariGizle();
+    document.getElementById('ozelButonlarContainer').style.display = 'block';
+}
+
+function geriDonRaporTarih() {
+    tumEkranlariGizle();
+    document.getElementById('raporTarihContainer').style.display = 'block';
 }
 
 async function yoklamaAl() {
@@ -359,48 +434,47 @@ function toggleDurum(button) {
 }
 
 function sinifSecimi() {
-    // Mehmet Kazan için özel akış
+    // Özel kullanıcılar için özel akış
     const tcNo = document.getElementById('tcNo').value;
-    if (tcNo === "19451103048") {
+    const ozelKullanicilar = [
+        "19451103048", // Mehmet Kazan
+        "31973140738", "21389038194", "60115197910", "26666641524" // Diğer özel kullanıcılar
+    ];
+    if (ozelKullanicilar.includes(tcNo)) {
         document.getElementById('ozelButonlarContainer').style.display = 'none';
-        document.getElementById('sinifContainer').style.display = 'block';
-        getSiniflar();
+        document.getElementById('tarihContainer').style.display = 'block';
+        setDefaultDate('tarihSec'); // Varsayılan tarihi ayarla
     } else {
         // Diğer kullanıcılar için normal akış
         document.getElementById('ozelButonlarContainer').style.display = 'none';
-        document.getElementById('sinifContainer').style.display = 'block';
-        getSiniflar();
+        document.getElementById('tarihContainer').style.display = 'block';
+        setDefaultDate('tarihSec');
     }
-}
-
-function sinifSec() {
-    const sinifSelect = document.getElementById('sinifSelect');
-    const secilenSinif = sinifSelect.value;
-    
-    if (secilenSinif === "") {
-        alert("Lütfen bir sınıf seçiniz.");
-        return;
-    }
-
-    document.getElementById('seciliSinif').textContent = secilenSinif;
-    document.getElementById('sinifContainer').style.display = 'none';
-    document.getElementById('tarihContainer').style.display = 'block';
-    setDefaultDate('tarihSec');
 }
 
 function yoklamaRaporu() {
-    // Yoklama raporu işlemleri
     document.getElementById('ozelButonlarContainer').style.display = 'none';
     document.getElementById('raporTarihContainer').style.display = 'block';
-    setDefaultDate('raporTarihSec'); // Rapor tarih seçimi için varsayılan tarih ayarla
-    getSiniflarForRapor(); // Rapor için sınıf seçeneklerini yükle
+    getSiniflarForRapor();
 }
 
 async function getSiniflarForRapor() {
     try {
+        const tarihInput = document.getElementById('tarihAraligiSec');
+        const tarihAraligi = tarihInput.value.split(' - ');
+        const baslangicTarih = new Date(tarihAraligi[0]);
+        const bitisTarih = tarihAraligi[1] ? new Date(tarihAraligi[1]) : baslangicTarih;
+        
+        const gunler = new Set();
+        for (let d = new Date(baslangicTarih); d <= bitisTarih; d.setDate(d.getDate() + 1)) {
+            const gun = d.toLocaleDateString('tr-TR', { weekday: 'long' }).toUpperCase();
+            gunler.add(gun);
+        }
+
         const { data, error } = await supabaseClient
             .from('siniflar')
             .select('*')
+            .in('gun', Array.from(gunler))
             .order('ad', { ascending: true });
 
         if (error) throw error;
@@ -421,57 +495,46 @@ async function getSiniflarForRapor() {
     }
 }
 
-function raporTarihSec() {
-    const raporTarih = document.getElementById('raporTarihSec').value;
-    const secilenSinif = document.getElementById('raporSinifSelect').value;
+async function raporTarihSec() {
+    const tarihAraligi = $('#tarihAraligiSec').val().split(' - ');
+    const baslangicTarih = tarihAraligi[0];
+    const bitisTarih = tarihAraligi[1];
 
-    if (!raporTarih || !secilenSinif) {
-        alert("Lütfen bir tarih ve sınıf seçiniz.");
+    if (!baslangicTarih || !bitisTarih) {
+        alert("Lütfen bir tarih aralığı seçiniz.");
         return;
     }
 
     // Devamsızlık kayıtlarını al
-    getDevamsizlikRaporu(secilenSinif, raporTarih);
+    getDevamsizlikRaporu(baslangicTarih, bitisTarih);
 }
 
-async function getDevamsizlikRaporu(sinif, tarih) {
+async function getDevamsizlikRaporu(baslangicTarih, bitisTarih) {
     try {
-        let yoklamaData;
-        if (sinif === "TÜM SINIFLAR") {
-            const { data, error } = await supabaseClient
-                .from('yoklama')
-                .select('*')
-                .eq('tarih', tarih)
-                .order('sinif', { ascending: true })
-                .order('ders_saati', { ascending: true });
+        const { data, error } = await supabaseClient
+            .from('yoklama')
+            .select('*')
+            .gte('tarih', baslangicTarih)
+            .lte('tarih', bitisTarih)
+            .order('tarih', { ascending: true })
+            .order('ders_saati', { ascending: true });
 
-            if (error) throw error;
-            yoklamaData = data;
-        } else {
-            const { data, error } = await supabaseClient
-                .from('yoklama')
-                .select('*')
-                .eq('sinif', sinif)
-                .eq('tarih', tarih)
-                .order('ders_saati', { ascending: true });
-
-            if (error) throw error;
-            yoklamaData = data;
-        }
+        if (error) throw error;
 
         const raporListesi = document.getElementById('raporListesi');
         raporListesi.innerHTML = ''; // Önceki raporları temizle
 
-        if (yoklamaData.length === 0) {
-            raporListesi.innerHTML = '<p>Seçilen tarih ve sınıf için devamsızlık kaydı bulunamadı.</p>';
+        if (data.length === 0) {
+            raporListesi.innerHTML = '<p>Seçilen tarih aralığı için devamsızlık kaydı bulunamadı.</p>';
             return;
         }
 
         // Tablo başlıkları
         raporListesi.innerHTML = `
-            <table>
+            <table class="excel-style">
                 <thead>
                     <tr>
+                        <th>Tarih</th>
                         <th>Sınıf</th>
                         <th>Ders Saati</th>
                         <th>Öğretmen</th>
@@ -479,10 +542,11 @@ async function getDevamsizlikRaporu(sinif, tarih) {
                     </tr>
                 </thead>
                 <tbody>
-                    ${yoklamaData.map(yoklama => {
+                    ${data.map(yoklama => {
                         const gelmeyenOgrenciler = yoklama.gelmeyen_ogrenciler ? yoklama.gelmeyen_ogrenciler.split('-').join(', ') : 'Yok';
                         return `
                             <tr>
+                                <td>${yoklama.tarih}</td>
                                 <td>${yoklama.sinif}</td>
                                 <td>${yoklama.ders_saati}</td>
                                 <td>${yoklama.ogretmen}</td>
@@ -503,16 +567,6 @@ async function getDevamsizlikRaporu(sinif, tarih) {
     }
 }
 
-function geriDonOzelButonlar() {
-    document.getElementById('raporTarihContainer').style.display = 'none';
-    document.getElementById('ozelButonlarContainer').style.display = 'block';
-}
-
-function geriDonRaporTarih() {
-    document.getElementById('raporSonucContainer').style.display = 'none';
-    document.getElementById('raporTarihContainer').style.display = 'block';
-}
-
 function indirCSV() {
     const raporListesi = document.querySelectorAll('#raporListesi table tbody tr');
     let csvContent = "data:text/csv;charset=utf-8,Sınıf,Ders Saati,Öğretmen,Gelmeyen Öğrenciler\n";
@@ -530,11 +584,71 @@ function indirCSV() {
     a.click();
 }
 
-document.addEventListener('DOMContentLoaded', getOgretmenler);
+function secimleriSifirla() {
+    // Seçim bilgilerini temizle
+    document.getElementById('seciliOgretmen').textContent = '';
+    document.getElementById('seciliSinif').textContent = '';
+    document.getElementById('seciliTarih').textContent = '';
+    document.getElementById('seciliDersSaati').textContent = '';
+
+    // Seçim alanlarını sıfırla
+    document.getElementById('ogretmenSelect').selectedIndex = 0;
+    document.getElementById('tcNo').value = '';
+    document.getElementById('sinifSelect').selectedIndex = 0;
+    document.getElementById('tarihSec').value = '';
+    selectedDersSaatleri.clear();
+}
+
+function tumEkranlariGizle() {
+    const containers = document.querySelectorAll('.container');
+    containers.forEach(container => {
+        container.style.display = 'none';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    getOgretmenler();
+
+    // Tarih değiştiğinde sınıf listesini güncelle
+    const tarihInput = document.getElementById('tarihSec');
+    tarihInput.addEventListener('change', function() {
+        getSiniflar();
+    });
+
+    const raporTarihInput = document.getElementById('raporTarihSec');
+    raporTarihInput.addEventListener('change', function() {
+        getSiniflarForRapor();
+    });
+});
 
 // Tüm input ve select elementleri için otomatik klavye kapatma
 document.addEventListener('change', function(e) {
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
         e.target.blur();
     }
+});
+
+function geriDonOzelButonlar() {
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+    
+    tumEkranlariGizle();
+    document.getElementById('ozelButonlarContainer').style.display = 'block';
+}
+
+$(function() {
+    $('#tarihAraligiSec').daterangepicker({
+        locale: {
+            format: 'YYYY-MM-DD'
+        },
+        singleDatePicker: false,
+        showDropdowns: true,
+        minYear: 1901,
+        maxYear: parseInt(moment().format('YYYY'),10),
+        opens: 'center',
+        autoApply: true,
+        linkedCalendars: false,
+        showCustomRangeLabel: false
+    });
 });

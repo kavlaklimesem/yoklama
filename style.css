@@ -273,6 +273,22 @@ button:hover::after {
     .container {
         padding: 15px;
     }
+    button {
+        font-size: 0.9em;
+        padding: 12px;
+    }
+    .form-group label {
+        font-size: 0.9em;
+    }
+    select, input {
+        font-size: 0.85em;
+        padding: 10px;
+    }
+    .ders-saatleri button {
+        width: 35px;
+        height: 35px;
+        font-size: 0.8em;
+    }
 }
 
 table {
@@ -298,4 +314,28 @@ tr:nth-child(even) {
 
 tr:hover {
     background-color: #f1f1f1;
+}
+
+.excel-style {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.excel-style th, .excel-style td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.excel-style th {
+    background-color: #f2f2f2;
+    color: black;
+}
+
+.excel-style tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.excel-style tr:hover {
+    background-color: #ddd;
 }
